@@ -113,16 +113,16 @@ namespace ISBoxerEVELauncher
             get 
             {
                 // already detected?
-                if (!string.IsNullOrEmpty(_ISPath))
-                    return _ISPath;
+                if (!string.IsNullOrEmpty(App._ISPath))
+                    return App._ISPath;
 
                 // nope.
 
                 // we're expected to be installed into the IS/ISBoxer folder....
                 if (System.IO.File.Exists(BaseDirectory + @"\InnerSpace.exe"))
                 {
-                    _ISPath = BaseDirectory;
-                    return _ISPath;
+                  App._ISPath = BaseDirectory;
+                    return App._ISPath;
                 }
 
                 // oh well... the path SHOULD be in the registry...
@@ -134,8 +134,8 @@ namespace ISBoxerEVELauncher
                         string reg_path = ISPathKey.GetValue("Path", Environment.SpecialFolder.ProgramFiles + @"\InnerSpace") as string;
                         if (System.IO.File.Exists(reg_path + "\\InnerSpace.exe"))
                         {
-                            _ISPath = reg_path;
-                            return _ISPath;
+                          App._ISPath = reg_path;
+                            return App._ISPath;
                         }
                     }
                 }
@@ -145,7 +145,7 @@ namespace ISBoxerEVELauncher
             }
             set
             {
-                _ISPath = value;
+              App._ISPath = value;
             }
         }
 
@@ -204,22 +204,23 @@ namespace ISBoxerEVELauncher
         }
 
         static Set _GameConfiguration;
-        public static Set GameConfiguration { get { return _GameConfiguration; } private set { _GameConfiguration = value; ReloadGameProfiles(); } }
+        public static Set GameConfiguration { get { return App._GameConfiguration; } private set {
+          App._GameConfiguration = value; ReloadGameProfiles(); } }
         static ObservableCollection<InnerSpaceGameProfile> _GameProfiles;
         public static ObservableCollection<InnerSpaceGameProfile> GameProfiles 
         { 
             get
             {
-                if (_GameProfiles == null)
+                if (App._GameProfiles == null)
                 {
-                    _GameProfiles = new ObservableCollection<InnerSpaceGameProfile>();
+                  App._GameProfiles = new ObservableCollection<InnerSpaceGameProfile>();
                     ReloadGameProfiles();
                 }
-                return _GameProfiles;
+                return App._GameProfiles;
             }
             private set
             {
-                _GameProfiles = value;
+              App._GameProfiles = value;
             }
         }
 
@@ -366,48 +367,15 @@ namespace ISBoxerEVELauncher
             }
         }
 
-        /// <summary>
-        /// Have Inner Space launch EVE via a specified Game and Game Profile
-        /// </summary>
-        /// <param name="ssoToken"></param>
-        /// <param name="gameName"></param>
-        /// <param name="gameProfileName"></param>
-        /// <param name="sisi"></param>
-        /// <param name="dxVersion"></param>
-        /// <returns></returns>
+      /// <summary>
         static public bool Launch(string ssoToken, string gameName, string gameProfileName, bool sisi, DirectXVersion dxVersion, long characterID)
-        {
-            if (ssoToken == null)
-                throw new ArgumentNullException("ssoToken");
-            if (gameName == null)
-                throw new ArgumentNullException("gameName");
-            if (gameProfileName == null)
-                throw new ArgumentNullException("gameProfileName");
-
             string cmdLine = "open \"" + gameName + "\" \"" + gameProfileName + "\" -addparam \"/noconsole\" -addparam \"/ssoToken=" + ssoToken + "\"";
-            if (dxVersion != DirectXVersion.Default)
-            {
-                cmdLine += " -addparam \"/triPlatform=" + dxVersion.ToString() + "\"";
-            }
 
             if (characterID!=0)
             {
                 cmdLine += " -addparam \"/character="+characterID+"\"";
             }
 
-            try
-            {
-                System.Diagnostics.Process.Start(App.ISExecutable, cmdLine);
-            }
-            catch (Exception e)
-            {
-                MessageBox.Show("Launch failed. executable=" + App.ISExecutable + "; args=" + cmdLine + System.Environment.NewLine + e.ToString());
-                return false;
-            }
-            return true;
-        }
-
-        /// <summary>
         /// Launch EVE directly
         /// </summary>
         /// <param name="ssoToken"></param>

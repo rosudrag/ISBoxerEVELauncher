@@ -36,7 +36,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>ISBEL.ico</ApplicationIcon>
+    <StartupObject />
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -62,7 +62,9 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="EVECharacter.cs" />
+    <Compile Include="BypassSafety.cs" />
     <Compile Include="Extensions.cs" />
+    <Compile Include="GameLauncher\InnerspaceLauncher.cs" />
     <Compile Include="KeyTransmitter.cs" />
     <Compile Include="Launchers.cs" />
     <Compile Include="Windows\AddCharacterWindow.xaml.cs">

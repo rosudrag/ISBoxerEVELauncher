@@ -34,8 +34,6 @@ namespace ISBoxerEVELauncher.Launchers
         public EVEAccount.LoginResult Launch(ILaunchTarget launchTarget)
         {
             return launchTarget.EVEAccount.Launch(GameProfile.Game, GameProfile.GameProfile, App.Settings.UseSingularity, UseDirectXVersion, launchTarget.CharacterID);
-
-            throw new NotImplementedException();
         }
 
         public string LauncherText
