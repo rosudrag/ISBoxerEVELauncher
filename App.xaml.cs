@@ -19,6 +19,8 @@ namespace ISBoxerEVELauncher
 	/// </summary>
 	public partial class App : Application
 	{
+        public static bool HasInnerSpace { get; set; }
+
 		public static string AppVersion
 		{
 			get
@@ -541,9 +543,21 @@ namespace ISBoxerEVELauncher
 			{
 				InnerSpaceGameProfile gp;
 				if (Settings.UseSingularity)
-					launcher = new Launchers.InnerSpaceLauncher(Settings.SingularityGameProfile, Settings.UseDirectXVersion, true);
+                {
+                    gp = Settings.SingularityGameProfile;
+                }
 				else
-					launcher = new Launchers.InnerSpaceLauncher(Settings.TranquilityGameProfile, Settings.UseDirectXVersion, false);
+                {
+                    gp = Settings.TranquilityGameProfile;
+                }
+
+                if (gp == null || string.IsNullOrEmpty(gp.Game) || string.IsNullOrEmpty(gp.GameProfile))
+                {
+                    MessageBox.Show("Please select a Game Profile first!");
+                    return;
+                }
+
+                launcher = new Launchers.InnerSpaceLauncher(gp, Settings.UseDirectXVersion, Settings.UseSingularity);
 			}
 			else
 			{
@@ -563,15 +577,18 @@ namespace ISBoxerEVELauncher
 		/// </summary>
 		/// <param name="ensureMainModule">true if we should be more secure about it (e.g. Master Key transfer), false if we're just passing command-line around</param>
 		/// <returns></returns>
-		static public System.Diagnostics.Process GetMasterInstance(bool ensureMainModule)
+        static public Process GetMasterInstance(bool ensureMainModule)
 		{
-			System.Diagnostics.Process currentProcess = System.Diagnostics.Process.GetCurrentProcess();
+            Process currentProcess = Process.GetCurrentProcess();
 
-			IEnumerable<Process> processList = System.Diagnostics.Process.GetProcesses().Where(q => q.NameMatches(currentProcess) && (q.MainWindowHandle != IntPtr.Zero || q.Id == currentProcess.Id));
+            //Note:  https://docs.microsoft.com/en-us/dotnet/api/system.diagnostics.process.mainwindowhandle?view=netframework-4.7
+            //When the Main window is hidden, it will return a MainWindowHandle of 0.   This makes the following code fail when trying to find the master window that is minimized to the system tray:
+            IEnumerable<Process> processList = Process.GetProcesses().Where(q => q.NameMatches(currentProcess) && (q.MainWindowHandle!=IntPtr.Zero || q.Id==currentProcess.Id));
+
 			if (processList == null)
 				return null;
 
-			System.Diagnostics.Process[] processes = processList.ToArray();
+            Process[] processes = processList.ToArray();
 			Array.Sort(processes, (a, b) => a.StartTime > b.StartTime ? 1 : -1);
 			if (processes.Length > 1)
 			{
@@ -662,10 +679,12 @@ namespace ISBoxerEVELauncher
 
 			if (!TransmitCommandLine())
 			{
-
 				ReloadGameConfiguration();
 
-
+                if (GameConfiguration!=null || System.IO.File.Exists(ISExecutable))
+                {
+                    HasInnerSpace = true;
+                }
 
 				var mainWindow = new Windows.MainWindow();
 				//Re-enable normal shutdown mode.
